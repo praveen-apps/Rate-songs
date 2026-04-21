@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Tube Jukebox</title>
+
+    <link rel="manifest" href="/Listen/manifest.json">
+    <meta name="theme-color" content="#F7F6F2">
+
+    <style>
+        :root {
+            --bg-color: #F7F6F2;
+            --card-bg: #FFFFFF;
+            --text-main: #5C5C5C;
+            --border-color: #E2DFD6;
+            --input-bg: #FAFAFA;
+            --item-hover: #F2F4F1;
+            --accent-color: #9575CD;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --border-color: #333333;
+            --input-bg: #2a2a2a;
+            --item-hover: #3a3a3a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            transition: background-color 0.4s ease;
+        }
+
+        .header-wrapper {
+            position: relative;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+        }
+
+        h1 { 
+            font-weight: 300; 
+            letter-spacing: -1px; 
+            margin: 0; 
+        }
+        
+        .theme-btn {
+            position: absolute;
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 26px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sub-text { font-size: 13px; color: #888; margin-bottom: 20px; text-align: center; }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus { border-color: var(--accent-color); }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        button.action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: opacity 0.2s;
+        }
+
+        #loadBtn { background-color: #546E7A; color: white; }
+        #saveBtn { background-color: #8DAA91; color: white; }
+        button.action-btn:active { opacity: 0.8; }
+
+        #videoWrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .library-section {
+            text-align: left;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .library-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+
+        #libraryList {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .library-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--input-bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border: 1px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        /* Highlight the currently playing item */
+        .library-item.playing {
+            border-color: var(--accent-color);
+            background: var(--item-hover);
+        }
+
+        .library-item:hover { border-color: var(--accent-color); background: var(--item-hover); }
+
+        .item-text {
+            flex-grow: 1;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 10px;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0.4;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .icon-btn:hover { opacity: 1; }
+        
+        .delete-btn:hover { color: #FF0000; }
+        
+        /* Active state for the loop button */
+        .loop-btn.active {
+            opacity: 1;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .status { font-size: 11px; margin-top: 10px; color: #999; height: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-wrapper">
+        <h1>Zen Tube</h1>
+        <button id="themeToggle" class="theme-btn" title="Toggle Theme">☯</button>
+    </div>
+    <p class="sub-text">Build your personal music library.</p>
+
+    <input type="text" id="urlInput" placeholder="Paste YouTube link here...">
+    
+    <div class="btn-group">
+        <button id="loadBtn" class="action-btn">Play Now</button>
+        <button id="saveBtn" class="action-btn">Save to Library</button>
+    </div>
+
+    <div id="videoWrapper">
+        <div id="ytplayer"></div>
+    </div>
+    <div class="status" id="statusMsg"></div>
+
+    <div class="library-section">
+        <div class="library-title">Your Library</div>
+        <div id="libraryList"></div>
+    </div>
+</div>
+
+<script>
+    // --- Service Worker ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/Listen/sw.js')
+                .then(reg => console.log('SW registered!'))
+                .catch(err => console.log('SW failed!', err));
+        });
+    }
+
+    // --- DOM Elements ---
+    const urlInput = document.getElementById('urlInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const videoWrapper = document.getElementById('videoWrapper');
+    const libraryList = document.getElementById('libraryList');
+    const statusMsg = document.getElementById('statusMsg');
+    const themeToggle = document.getElementById('themeToggle');
+
+    // --- State Variables ---
+    let savedVideos = []; // Holds our permanently saved links
+    let currentPlayingIndex = -1; // Tracks which library item is currently playing
+    let ytPlayer = null; // Holds the YouTube API instance
+
+    // --- Theme Toggle ---
+    let rotation = 0;
+    themeToggle.onclick = () => {
+        rotation += 180;
+        themeToggle.style.transform = `rotate(${rotation}deg)`;
+        const body = document.body;
+        if (body.getAttribute('data-theme') === 'dark') {
+            body.removeAttribute('data-theme');
+        } else {
+            body.setAttribute('data-theme', 'dark');
+        }
+    };
+
+    // --- Utility Functions ---
+    function getID(url) {
+        const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const m = url.match(reg);
+        return (m && m[2].length === 11) ? m[2] : null;
+    }
+
+    function notify(text, color = "#888") {
+        statusMsg.textContent = text;
+        statusMsg.style.color = color;
+        setTimeout(() => { statusMsg.textContent = ""; }, 3000);
+    }
+
+    // --- 3. Permanent Storage Functions ---
+    function saveLibraryToStorage() {
+        localStorage.setItem('zenTubeLibrary', JSON.stringify(savedVideos));
+    }
+
+    function loadLibraryFromStorage() {
+        const stored = localStorage.getItem('zenTubeLibrary');
+        if (stored) {
+            savedVideos = JSON.parse(stored);
+        }
+        renderLibrary();
+    }
+
+    // --- YouTube API Setup for 1 & 2 (Autoplay & Replay) ---
+    // Load the IFrame Player API code asynchronously
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // This function triggers automatically when the YouTube API is ready
+    function onYouTubeIframeAPIReady() {
+        console.log("YouTube API Ready");
+    }
+
+    // Main function to play a video using the API
+    function playVideo(id, index = -1) {
+        videoWrapper.style.display = "block";
+        currentPlayingIndex = index;
+        renderLibrary(); // Re-render to highlight the active track
+
+        if (ytPlayer) {
+            // Player exists, just load the new video
+            ytPlayer.loadVideoById(id);
+        } else {
+            // Create a new player
+            ytPlayer = new YT.Player('ytplayer', {
+                height: '100%',
+                width: '100%',
+                videoId: id,
+                playerVars: { 
+                    'autoplay': 1, 
+                    'playsinline': 1, // Helps with mobile playback
+                    'rel': 0 
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+        notify("Loading video...", "var(--text-main)");
+    }
+
+               // Detect when a video finishes to trigger Replay or Autoplay
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            // Check if we are playing from the library
+            if (currentPlayingIndex !== -1 && savedVideos.length > 0) {
+                const currentVideo = savedVideos[currentPlayingIndex];
+                
+                if (currentVideo.isLooping) {
+                    // Feature 1: Replay Repeatedly (Forces reload)
+                    setTimeout(() => {
+                        ytPlayer.loadVideoById(currentVideo.id);
+                    }, 150);
+                } else {
+                    // Feature 2: Autoplay Next (ONLY if there is more than 1 video)
+                    if (savedVideos.length > 1) {
+                        let nextIndex = currentPlayingIndex + 1;
+                        if (nextIndex >= savedVideos.length) {
+                            nextIndex = 0; // Loop back to the start of the playlist
+                        }
+                        playVideo(savedVideos[nextIndex].id, nextIndex);
+                    }
+                    // If there's only 1 video and loop is OFF, it will now just stop playing.
+                }
+            }
+        }
+    }
+
+
+
+
+    // --- UI Interactions ---
+    loadBtn.onclick = () => {
+        const id = getID(urlInput.value);
+        if (!id) return notify("Invalid YouTube link", "#FF0000");
+        playVideo(id, -1); // -1 means it's a one-off, not from the library
+    };
+
+    saveBtn.onclick = () => {
+        const url = urlInput.value.trim();
+        const id = getID(url);
+        if (!id) return notify("Nothing to save", "#FF0000");
+
+        // Add to array, save permanently, and refresh UI
+        savedVideos.push({ id: id, url: url, isLooping: false });
+        saveLibraryToStorage();
+        renderLibrary();
+        
+        urlInput.value = "";
+        notify("Saved to library!", "var(--text-main)");
+    };
+
+    function renderLibrary() {
+        libraryList.innerHTML = '';
+        
+        savedVideos.forEach((video, index) => {
+            const item = document.createElement('div');
+            // Add 'playing' class if this is the active video
+            item.className = `library-item ${index === currentPlayingIndex ? 'playing' : ''}`;
+            
+            // Generate the numeric name based on array index
+            const videoName = `${index + 1} Saved`;
+
+            item.innerHTML = `
+                <div class="item-text" title="${video.url}">✦ ${videoName}</div>
+                <div class="controls-wrapper">
+                    <button class="icon-btn loop-btn ${video.isLooping ? 'active' : ''}" title="Replay repeatedly">↳↰</button>
+                    <button class="icon-btn delete-btn" title="Remove">⛌</button>
+                </div>
+            `;
+
+            // Click text to play
+            item.querySelector('.item-text').onclick = () => {
+                playVideo(video.id, index);
+            };
+
+            // Toggle looping
+            item.querySelector('.loop-btn').onclick = (e) => {
+                e.stopPropagation(); // Prevent playing when just clicking loop
+                video.isLooping = !video.isLooping;
+                saveLibraryToStorage();
+                renderLibrary(); // Re-render to update the button color
+            };
+
+            // Delete item
+            item.querySelector('.delete-btn').onclick = (e) => {
+                e.stopPropagation();
+                savedVideos.splice(index, 1);
+                
+                // Adjust current playing index if needed so autoplay doesn't break
+                if (currentPlayingIndex === index) {
+                    currentPlayingIndex = -1; 
+                } else if (currentPlayingIndex > index) {
+                    currentPlayingIndex--;
+                }
+                
+                saveLibraryToStorage();
+                renderLibrary();
+            };
+
+            libraryList.appendChild(item);
+        });
+    }
+
+    // Initialize the app by loading permanently saved data
+    loadLibraryFromStorage();
+
+</script>
+
+</body>
+</html>
