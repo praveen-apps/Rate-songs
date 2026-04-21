@@ -3,326 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen Tube Jukebox</title>
-
-    <link rel="manifest" href="/Listen/manifest.json">
-    <meta name="theme-color" content="#F7F6F2">
-
+    <title>Rate it</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2ecc71">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/727/727218.png">
+    
     <style>
         :root {
-            --bg-color: #F7F6F2;
-            --card-bg: #FFFFFF;
-            --text-main: #5C5C5C;
-            --border-color: #E2DFD6;
-            --input-bg: #FAFAFA;
-            --item-hover: #F2F4F1;
-            --accent-color: #9575CD;
+            --bg-color: #F7F6F2; --card-bg: #FFFFFF; --text-main: #5C5C5C;
+            --accent-green: #2ecc71; --accent-hover: #27ae60; --border-color: #E2DFD6;
+            --input-bg: #FAFAFA; --track-hover: #F9F9F9; --log-text: #888888;
         }
-
         [data-theme="dark"] {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #ffffff;
-            --border-color: #333333;
-            --input-bg: #2a2a2a;
-            --item-hover: #3a3a3a;
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #ffffff;
+            --border-color: #333333; --input-bg: #2a2a2a; --track-hover: #2d2d2d; --log-text: #aaaaaa;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-color); color: var(--text-main);
             font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: 20px; transition: background 0.3s;
         }
 
         .container {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-            transition: background-color 0.4s ease;
+            background-color: var(--card-bg); padding: 2rem; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); width: 100%; max-width: 450px;
+            text-align: center; transition: background 0.3s;
         }
 
-        .header-wrapper {
-            position: relative;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-        }
-
-        h1 { 
-            font-weight: 300; 
-            letter-spacing: -1px; 
-            margin: 0; 
-        }
-        
-        .theme-btn {
-            position: absolute;
-            right: 0;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 26px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sub-text { font-size: 13px; color: #888; margin-bottom: 20px; text-align: center; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        h1 { font-weight: 300; margin: 0; }
+        .theme-btn { background: none; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 50%; width: 35px; height: 35px; cursor: pointer; }
 
         input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background-color: var(--input-bg);
-            color: var(--text-main);
-            outline: none;
-            transition: 0.3s;
+            width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 12px;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            background-color: var(--input-bg); color: var(--text-main); outline: none;
         }
 
-        input[type="text"]:focus { border-color: var(--accent-color); }
-
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        button.action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 500;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: opacity 0.2s;
+        button.primary-btn {
+            background-color: var(--accent-green); color: white; border: none;
+            padding: 12px; border-radius: 10px; width: 100%; cursor: pointer;
+            font-weight: 600; margin-bottom: 20px;
         }
 
-        #loadBtn { background-color: #546E7A; color: white; }
-        #saveBtn { background-color: #8DAA91; color: white; }
-        button.action-btn:active { opacity: 0.8; }
+        #resultsList { text-align: left; max-height: 150px; overflow-y: auto; margin-bottom: 20px; }
+        .track-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 13px; }
+        .track-item:hover { background-color: var(--track-hover); }
 
-        #videoWrapper {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            display: none;
-            margin-bottom: 20px;
+        audio { width: 100%; margin-top: 10px; }
+
+        #ratingArea { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .circular-chart { display: block; margin: 15px auto; max-width: 120px; }
+        .circle-bg { fill: none; stroke: var(--border-color); stroke-width: 3; }
+        .circle {
+            fill: none; stroke-width: 2.8; stroke-linecap: round;
+            transition: stroke-dasharray 0.5s ease;
         }
+        .percentage { fill: var(--text-main); font-size: 0.5em; text-anchor: middle; font-weight: bold; }
 
-        .library-section {
-            text-align: left;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
+        input[type="range"] { width: 80%; accent-color: var(--accent-green); margin: 15px 0; }
+
+        .log-section { margin-top: 25px; text-align: left; border-top: 1px solid var(--border-color); padding-top: 15px; }
+        .rating-entry {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px; padding: 8px; background: var(--input-bg);
+            border-radius: 8px; transition: 0.4s;
         }
-
-        .library-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
-
-        #libraryList {
-            max-height: 150px;
-            overflow-y: auto;
-        }
-
-        .library-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: var(--input-bg);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            border: 1px solid transparent;
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-
-        /* Highlight the currently playing item */
-        .library-item.playing {
-            border-color: var(--accent-color);
-            background: var(--item-hover);
-        }
-
-        .library-item:hover { border-color: var(--accent-color); background: var(--item-hover); }
-
-        .item-text {
-            flex-grow: 1;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 10px;
-        }
-
-        .controls-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 16px;
-            cursor: pointer;
-            opacity: 0.4;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: opacity 0.2s, color 0.2s;
-        }
-
-        .icon-btn:hover { opacity: 1; }
-        
-        .delete-btn:hover { color: #FF0000; }
-        
-        /* Active state for the loop button */
-        .loop-btn.active {
-            opacity: 1;
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-
-        .status { font-size: 11px; margin-top: 10px; color: #999; height: 15px; }
+        .deleting { opacity: 0; transform: translateX(20px); }
+        .rating-badge { font-weight: bold; color: white; padding: 4px 8px; border-radius: 6px; margin-right: 10px; min-width: 30px; text-align: center; }
+        .delete-btn { background: none; border: none; cursor: pointer; color: var(--text-main); opacity: 0.5; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-wrapper">
-        <h1>Zen Tube</h1>
-        <button id="themeToggle" class="theme-btn" title="Toggle Theme">☯</button>
+    <div class="header-top">
+        <h1>Rate it</h1>
+        <button class="theme-btn" id="themeToggle">☯</button>
     </div>
-    <p class="sub-text">Build your personal music library.</p>
-
-    <input type="text" id="urlInput" placeholder="Paste YouTube link here...">
     
-    <div class="btn-group">
-        <button id="loadBtn" class="action-btn">Play Now</button>
-        <button id="saveBtn" class="action-btn">Save to Library</button>
+    <input type="text" id="searchInput" placeholder="Search song or artist...">
+    <button id="searchBtn" class="primary-btn">Search Previews</button>
+
+    <div id="resultsList"></div>
+    <audio id="audioPlayer" controls></audio>
+
+    <div id="ratingArea">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="circle" id="ratingCircle" stroke-dasharray="0, 100" stroke="#e74c3c" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <text x="18" y="20.35" class="percentage" id="ratingText">0.0</text>
+        </svg>
+        <input type="range" id="ratingSlider" min="0" max="10" step="0.1" value="0">
+        <button id="saveRatingBtn" class="primary-btn">Save Rating</button>
     </div>
 
-    <div id="videoWrapper">
-        <div id="ytplayer"></div>
-    </div>
-    <div class="status" id="statusMsg"></div>
-
-    <div class="library-section">
-        <div class="library-title">Your Library</div>
-        <div id="libraryList"></div>
+    <div class="log-section">
+        <div style="font-weight:600; margin-bottom:10px;">Your Ratings</div>
+        <div id="ratingLog">No ratings yet.</div>
     </div>
 </div>
 
 <script>
-    // --- Service Worker ---
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/Listen/sw.js')
-                .then(reg => console.log('SW registered!'))
-                .catch(err => console.log('SW failed!', err));
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsList = document.getElementById('resultsList');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const ratingArea = document.getElementById('ratingArea');
+    const ratingLog = document.getElementById('ratingLog');
+    const ratingSlider = document.getElementById('ratingSlider');
+    const ratingCircle = document.getElementById('ratingCircle');
+    const ratingText = document.getElementById('ratingText');
+    const saveRatingBtn = document.getElementById('saveRatingBtn');
+
+    let currentTrackName = "", currentArtist = "";
+    let savedRatings = JSON.parse(localStorage.getItem('myRatings')) || [];
+
+    renderLog();
+
+    themeToggle.onclick = () => {
+        document.body.toggleAttribute('data-theme', !document.body.hasAttribute('data-theme'));
+        document.body.hasAttribute('data-theme') ? document.body.setAttribute('data-theme', 'dark') : document.body.removeAttribute('data-theme');
+    };
+
+    searchBtn.onclick = async () => {
+        const query = searchInput.value.trim();
+        if (!query) return;
+        const resp = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=5`);
+        const data = await resp.json();
+        resultsList.innerHTML = "";
+        data.results.forEach(track => {
+            const item = document.createElement('div');
+            item.className = 'track-item';
+            item.innerHTML = `<strong>${track.trackName}</strong><br><small>${track.artistName}</small>`;
+            item.onclick = () => {
+                currentTrackName = track.trackName; currentArtist = track.artistName;
+                audioPlayer.src = track.previewUrl; audioPlayer.play();
+                ratingArea.style.display = "block"; resetRating();
+            };
+            resultsList.appendChild(item);
+        });
+    };
+
+    function getRatingColor(val) {
+        if (val >= 7.1) return "#2ecc71";
+        if (val >= 5.1) return "#f1c40f";
+        return "#e74c3c";
+    }
+
+    // FIXED: Circle Update Logic
+    ratingSlider.oninput = (e) => {
+        const val = parseFloat(e.target.value).toFixed(1);
+        ratingText.textContent = val;
+        ratingCircle.setAttribute('stroke-dasharray', `${(val / 10) * 100}, 100`);
+        ratingCircle.style.stroke = getRatingColor(val);
+    };
+
+    function resetRating() {
+        ratingSlider.value = 0;
+        ratingText.textContent = "0.0";
+        ratingCircle.setAttribute('stroke-dasharray', '0, 100');
+        ratingCircle.style.stroke = "#e74c3c";
+    }
+
+    saveRatingBtn.onclick = () => {
+        const rating = { id: Date.now(), name: currentTrackName, artist: currentArtist, score: ratingSlider.value };
+        savedRatings.unshift(rating);
+        localStorage.setItem('myRatings', JSON.stringify(savedRatings));
+        renderLog();
+    };
+
+    function renderLog() {
+        if (savedRatings.length === 0) { ratingLog.innerHTML = "No ratings yet."; return; }
+        ratingLog.innerHTML = "";
+        savedRatings.forEach(item => {
+            const entry = document.createElement('div');
+            entry.className = 'rating-entry';
+            entry.innerHTML = `
+                <div style="display:flex; align-items:center;">
+                    <span class="rating-badge" style="background:${getRatingColor(item.score)}">${item.score}</span>
+                    <div><strong>${item.name}</strong><br><small>${item.artist}</small></div>
+                </div>
+                <button class="delete-btn" onclick="deleteEntry(${item.id}, this.parentElement)">⛌</button>
+            `;
+            ratingLog.appendChild(entry);
         });
     }
 
-    // --- DOM Elements ---
-    const urlInput = document.getElementById('urlInput');
-    const loadBtn = document.getElementById('loadBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const videoWrapper = document.getElementById('videoWrapper');
-    const libraryList = document.getElementById('libraryList');
-    const statusMsg = document.getElementById('statusMsg');
-    const themeToggle = document.getElementById('themeToggle');
-
-    // --- State Variables ---
-    let savedVideos = []; // Holds our permanently saved links
-    let currentPlayingIndex = -1; // Tracks which library item is currently playing
-    let ytPlayer = null; // Holds the YouTube API instance
-
-    // --- Theme Toggle ---
-    let rotation = 0;
-    themeToggle.onclick = () => {
-        rotation += 180;
-        themeToggle.style.transform = `rotate(${rotation}deg)`;
-        const body = document.body;
-        if (body.getAttribute('data-theme') === 'dark') {
-            body.removeAttribute('data-theme');
-        } else {
-            body.setAttribute('data-theme', 'dark');
-        }
+    window.deleteEntry = (id, el) => {
+        el.classList.add('deleting');
+        setTimeout(() => {
+            savedRatings = savedRatings.filter(r => r.id !== id);
+            localStorage.setItem('myRatings', JSON.stringify(savedRatings));
+            renderLog();
+        }, 400);
     };
 
-    // --- Utility Functions ---
-    function getID(url) {
-        const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const m = url.match(reg);
-        return (m && m[2].length === 11) ? m[2] : null;
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
     }
-
-    function notify(text, color = "#888") {
-        statusMsg.textContent = text;
-        statusMsg.style.color = color;
-        setTimeout(() => { statusMsg.textContent = ""; }, 3000);
-    }
-
-    // --- 3. Permanent Storage Functions ---
-    function saveLibraryToStorage() {
-        localStorage.setItem('zenTubeLibrary', JSON.stringify(savedVideos));
-    }
-
-    function loadLibraryFromStorage() {
-        const stored = localStorage.getItem('zenTubeLibrary');
-        if (stored) {
-            savedVideos = JSON.parse(stored);
-        }
-        renderLibrary();
-    }
-
-    // --- YouTube API Setup for 1 & 2 (Autoplay & Replay) ---
-    // Load the IFrame Player API code asynchronously
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    // This function triggers automatically when the YouTube API is ready
-    function onYouTubeIframeAPIReady() {
-        console.log("YouTube API Ready");
-    }
-
-    // Main function to play a video using the API
-    function playVideo(id, index = -1) {
-        videoWrapper.style.display = "block";
-        currentPlayingIndex = index;
-        renderLibrary(); // Re-render to highlight the active track
-
-        if (ytPlayer) {
-            // Player exists, just load the new video
-            ytPlayer.loadVideoById(id);
+</script>
+</body>
+</html>oadVideoById(id);
         } else {
             // Create a new player
             ytPlayer = new YT.Player('ytplayer', {
